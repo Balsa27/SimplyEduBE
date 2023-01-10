@@ -1,0 +1,276 @@
+version: "3.9"
+services:
+  config-server:
+    container_name: config-server
+    build:
+      context: ./
+      dockerfile: ./Config-Server/Dockerfile
+    ports:
+      - "9010:9010"
+    networks:
+      - simplyeducation
+    restart: always
+    environment:
+      - "SPRING_PROFILES_ACTIVE=prod"
+  
+  discovery-service:
+    container_name: discovery-service
+    build:
+      context: ./
+      dockerfile: ./Discovery-Service/Dockerfile
+    ports:
+      - "9001:9001"
+    networks:
+      - simplyeducation
+    depends_on:
+      - config-server
+    restart: always
+    environment:
+      - "SPRING_PROFILES_ACTIVE=prod"
+
+  auth-server:
+    container_name: auth-server
+    build:
+      context: ./
+      dockerfile: ./Auth-Server/Dockerfile
+    ports:
+      - "9002:9002"
+    networks:
+      - simplyeducation
+    depends_on:
+      - discovery-service
+      - config-server
+      - mysql-authserver
+    restart: always
+    environment:
+      - "SPRING_PROFILES_ACTIVE=prod"
+
+  api-gateway:
+    container_name: api-gateway
+    build:
+      context: ./
+      dockerfile: ./API-Gateway/Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - simplyeducation
+    depends_on:
+      - discovery-service
+      - config-server
+    restart: always
+    environment:
+      - "SPRING_PROFILES_ACTIVE=prod"
+
+  courses:
+    container_name: courses
+    build:
+      context: ./
+      dockerfile: ./Courses/Dockerfile
+    ports:
+      - "8081:8081"
+    networks:
+      - simplyeducation
+    depends_on:
+      - discovery-service
+      - config-server
+      - mysql-courses
+    environment:
+      - "SPRING_PROFILES_ACTIVE=prod"
+  
+  cart:
+    container_name: cart
+    build:
+      context: ./
+      dockerfile: ./Cart/Dockerfile
+    ports:
+      - "8082:8082"
+    networks:
+      - simplyeducation
+    depends_on:
+      - discovery-service
+      - config-server
+      - mysql-cart
+    environment:
+      - "SPRING_PROFILES_ACTIVE=prod"
+
+  purchases:
+    container_name: purchases
+    build:
+      context: ./
+      dockerfile: ./Purchases/Dockerfile
+    ports:
+      - "8087:8087"
+    networks:
+      - simplyeducation
+    depends_on:
+      - discovery-service
+      - config-server
+      - mysql-purchases
+    environment:
+      - "SPRING_PROFILES_ACTIVE=prod"
+ 
+  statistics:
+    container_name: statistics
+    build:
+      context: ./
+      dockerfile: ./Statistics/Dockerfile
+    ports:
+      - "8085:8085"
+    networks:
+      - simplyeducation
+    depends_on:
+      - discovery-service
+      - config-server
+    environment:
+      - "SPRING_PROFILES_ACTIVE=prod"
+  
+  subscription:
+    container_name: subscription
+    build:
+      context: ./
+      dockerfile: ./Subscription/Dockerfile
+    ports:
+      - "8086:8086"
+    networks:
+      - simplyeducation
+    depends_on:
+      - discovery-service
+      - config-server
+      - mysql-subscription
+    environment:
+      - "SPRING_PROFILES_ACTIVE=prod"
+        
+  user-courses:
+    container_name: user-courses
+    build:
+      context: ./
+      dockerfile: ./User-Courses/Dockerfile
+    ports:
+      - "8083:8083"
+    networks:
+      - simplyeducation
+    depends_on:
+      - discovery-service
+      - config-server
+    environment:
+      - "SPRING_PROFILES_ACTIVE=prod"
+
+  chat:
+    container_name: chat
+    build:
+      context: ./
+      dockerfile: ./Chat/Dockerfile
+    ports:
+      - "8090:8090"
+    networks:
+      - simplyeducation
+    depends_on:
+      - discovery-service
+      - config-server
+      - mysql-subscription
+    environment:
+      - "SPRING_PROFILES_ACTIVE=prod"
+        
+  mysql-authserver:
+    image: mysql:8.0.31
+    container_name: mysql-authserver
+    ports:
+      - 3307:3307
+    volumes:
+      - mysql-simplyeducation:/var/lib/mysql-authserver
+    environment:
+      - MYSQL_ROOT_PASSWORD=admin
+      - MYSQL_PASSWORD=admin
+      - MYSQL_USER=admin
+      - MYSQL_DATABASE=simplyeducation_authserver
+      - MYSQL_TCP_PORT=3307
+    networks:
+      - simplyeducation
+
+  
+  mysql-courses:
+    image: mysql:8.0.31
+    container_name: mysql-courses
+    ports:
+      - 3308:3308
+    volumes:
+      - mysql-simplyeducation:/var/lib/mysql-courses
+    environment:
+      - MYSQL_ROOT_PASSWORD=admin
+      - MYSQL_PASSWORD=admin
+      - MYSQL_USER=admin
+      - MYSQL_DATABASE=simplyeducation_courses
+      - MYSQL_TCP_PORT=3308
+    networks:
+      - simplyeducation
+  
+  mysql-cart:
+    image: mysql:8.0.31
+    container_name: mysql-cart
+    ports:
+      - 3309:3309
+    volumes:
+      - mysql-simplyeducation:/var/lib/mysql-cart
+    environment:
+      - MYSQL_ROOT_PASSWORD=admin
+      - MYSQL_PASSWORD=admin
+      - MYSQL_USER=admin
+      - MYSQL_DATABASE=simplyeducation_cart
+      - MYSQL_TCP_PORT=3309
+    networks:
+      - simplyeducation
+
+  mysql-purchases:
+    image: mysql:8.0.31
+    container_name: mysql-purchases
+    ports:
+      - 3310:3310
+    volumes:
+      - mysql-simplyeducation:/var/lib/mysql-puchases
+    environment:
+      - MYSQL_ROOT_PASSWORD=admin
+      - MYSQL_PASSWORD=admin
+      - MYSQL_USER=admin
+      - MYSQL_DATABASE=simplyeducation_purchases
+      - MYSQL_TCP_PORT=3310
+    networks:
+      - simplyeducation
+
+  mysql-subscription:
+    image: mysql:8.0.31
+    container_name: mysql-subscription
+    ports:
+      - 3311:3311
+    volumes:
+      - mysql-simplyeducation:/var/lib/mysql-subscription
+    environment:
+      - MYSQL_ROOT_PASSWORD=admin
+      - MYSQL_PASSWORD=admin
+      - MYSQL_USER=admin
+      - MYSQL_DATABASE=simplyeducation_subscription
+      - MYSQL_TCP_PORT=3311
+    networks:
+      - simplyeducation
+
+  mysql-user-courses:
+    image: mysql:8.0.31
+    container_name: mysql-user-courses
+    ports:
+      - 3312:3312
+    volumes:
+      - mysql-simplyeducation:/var/lib/mysql-user-courses
+    environment:
+      - MYSQL_ROOT_PASSWORD=admin
+      - MYSQL_PASSWORD=admin
+      - MYSQL_USER=admin
+      - MYSQL_DATABASE=simplyeducation_user_courses
+      - MYSQL_TCP_PORT=3312
+    networks:
+      - simplyeducation
+
+volumes:
+  mysql-simplyeducation:
+    driver: local
+
+networks:
+  simplyeducation:

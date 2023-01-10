@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: chat
+  profiles:
+    active: dev
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+    import: optional:configserver:http://localhost:9010
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+    import: optional:configserver:http://config-server:9010
